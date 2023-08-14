@@ -7,7 +7,6 @@ import (
 	"go-yanc/actions"
 	"net"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -15,7 +14,7 @@ func main() {
 	pterm.DefaultHeader = *pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgDefault))
 	pterm.DefaultHeader = *pterm.DefaultHeader.WithMargin(30)
 	pterm.DefaultHeader = *pterm.DefaultHeader.WithTextStyle(pterm.NewStyle(pterm.FgLightYellow, pterm.Bold))
-	pterm.DefaultHeader.Println("*Yet Another Network Calculator *")
+	pterm.DefaultHeader.Println("* Yet Another Network Calculator *")
 
 	// Command line flags
 	// Define a flag for the network string
@@ -27,7 +26,7 @@ func main() {
 
 	// Check that the network string has been provided
 	if *networkStr == "" {
-		fmt.Println("Please provide the network using the --network flag")
+		fmt.Println("Please provide the network using the --n flag eg '--n 192.168.0/24'")
 		os.Exit(1)
 	}
 
@@ -40,14 +39,14 @@ func main() {
 	if actions.RFC1918(ip) {
 		pterm.Info.Println("The provided subnet is part of the RFC1918 private address space.\n")
 	} else {
-		pterm.Info.Println("The provided subnet is NOT part of the RFC1918 private address space.\n")
+		pterm.Info.Println("The provided subnet is Public address space.\n")
 	}
 
-	networkPrts := strings.Split(*networkStr, "/")
-	if len(networkPrts) != 2 {
-		fmt.Println("Invalid network string")
-		return
-	}
+	//networkPrts := strings.Split(*networkStr, "/")
+	//if len(networkPrts) != 2 {
+	//	fmt.Println("Invalid network string")
+	//	return
+	//}
 
 	//binaryIP := actions.CidrToBinary(ip)
 	decimalMask := actions.CidrToDecimalMask(ipNet)
@@ -56,7 +55,7 @@ func main() {
 	network, firstUsable, lastUsable, broadcast := actions.CalculateFirstLastBroadcast(ipNet)
 
 	// Create panel 1
-	panel1 := pterm.FgGray.Sprintf("├─ CIDR:\t"+pterm.LightBlue("%s"), *networkStr)
+	panel1 := pterm.FgGray.Sprintf("├─ CIDR:\t\t"+pterm.LightBlue("%s"), *networkStr)
 	panel1 += pterm.FgGray.Sprintf("\n│   ├─ Network Mask:\t"+pterm.LightBlue("%s"), decimalMask)
 	panel1 += pterm.FgGray.Sprintf("\n│   ├─ Network IP:\t"+pterm.LightBlue("%s"), network)
 	panel1 += pterm.FgGray.Sprintf("\n│   ├─ First Usable IP:\t"+pterm.LightBlue("%s"), firstUsable)
@@ -95,7 +94,7 @@ func main() {
 		firstSubnetDecimalMask := actions.CidrToDecimalMask(firstSubnetNet)
 
 		// Create panel 2
-		panel2 += pterm.FgLightGreen.Sprintf("\nSplit into %d networks, %d hosts per network, %s network mask:\n", numberOfNetworks, numberOfHostsPerNetwork, firstSubnetDecimalMask)
+		panel2 += pterm.FgLightGreen.Sprintf("\n**Split into %d networks, %d hosts per network, %s network mask:\n", numberOfNetworks, numberOfHostsPerNetwork, firstSubnetDecimalMask)
 		panel2 += pterm.FgGray.Sprintf("\n├─ %s", *networkStr) // Root of the tree
 		for i, subnet := range splitSubnets {
 			if i < len(splitSubnets)-1 {

@@ -15,6 +15,14 @@ func CalculateFirstLastBroadcast(ipNet *net.IPNet) (net.IP, net.IP, net.IP, net.
 		broadcast[i] = network[i] | ^mask[i]
 	}
 
+	// Handle /32 subnet
+	ones, bits := mask.Size()
+	if ones == bits { // If all bits are set, it's a /32 subnet
+		firstUsable = network
+		lastAddr = network
+		broadcast = network
+	}
+
 	// Increment firstUsable and decrement lastAddr to get last usable address
 	firstUsable[len(firstUsable)-1]++
 	lastAddr[len(lastAddr)-1]--
