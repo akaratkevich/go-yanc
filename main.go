@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/pterm/pterm"
-	"go/yanc/actions"
+	"go-yanc/actions"
 	"net"
 	"os"
 	"strings"
@@ -15,12 +15,13 @@ func main() {
 	pterm.DefaultHeader = *pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgDefault))
 	pterm.DefaultHeader = *pterm.DefaultHeader.WithMargin(30)
 	pterm.DefaultHeader = *pterm.DefaultHeader.WithTextStyle(pterm.NewStyle(pterm.FgLightYellow, pterm.Bold))
-	pterm.DefaultHeader.Println("* IPV4 Network Details: *")
+	pterm.DefaultHeader.Println("*Yet Another Network Calculator *")
 
 	// Command line flags
 	// Define a flag for the network string
-	networkStr := flag.String("network", "", "IPv4 network in CIDR format (e.g., 192.168.1.0/24)")
+	networkStr := flag.String("n", "", "IPv4 network in CIDR format (e.g., 192.168.1.0/24)")
 	split := flag.String("split", "", "Split network into subnets of this size (e.g., /25)")
+	//whois := flag.String("w", "", "RIPE whois lookup")
 
 	flag.Parse() // Parse the command-line flags
 
@@ -48,18 +49,22 @@ func main() {
 		return
 	}
 
-	binaryIP := actions.CidrToBinary(ip)
+	//binaryIP := actions.CidrToBinary(ip)
 	decimalMask := actions.CidrToDecimalMask(ipNet)
-	binaryMask := actions.CidrMaskToBinary(networkPrts[1])
+	//binaryMask := actions.CidrMaskToBinary(networkPrts[1])
 	numberOfHosts := actions.CalculateHosts(ipNet)
+	network, firstUsable, lastUsable, broadcast := actions.CalculateFirstLastBroadcast(ipNet)
 
 	// Create panel 1
-	//panel1 := pterm.FgGray.Sprintf("\nCIDR: %s\nDecimal Mask: %s\nBinary IP: %s\nBinary Mask: %s\nNumber of Hosts: %d\n", *networkStr, decimalMask, binaryIP, binaryMask, numberOfHosts)
-	panel1 := pterm.FgGray.Sprintf("├─ CIDR: %s", *networkStr)
-	panel1 += pterm.FgGray.Sprintf("\n│   ├─ Decimal Mask: %s", decimalMask)
-	panel1 += pterm.FgGray.Sprintf("\n│   ├─ Binary IP: %s", binaryIP)
-	panel1 += pterm.FgGray.Sprintf("\n│   ├─ Binary Mask: %s", binaryMask)
-	panel1 += pterm.FgGray.Sprintf("\n│   └─ Number of Hosts: %d", numberOfHosts)
+	panel1 := pterm.FgGray.Sprintf("├─ CIDR:\t"+pterm.LightBlue("%s"), *networkStr)
+	panel1 += pterm.FgGray.Sprintf("\n│   ├─ Network Mask:\t"+pterm.LightBlue("%s"), decimalMask)
+	panel1 += pterm.FgGray.Sprintf("\n│   ├─ Network IP:\t"+pterm.LightBlue("%s"), network)
+	panel1 += pterm.FgGray.Sprintf("\n│   ├─ First Usable IP:\t"+pterm.LightBlue("%s"), firstUsable)
+	panel1 += pterm.FgGray.Sprintf("\n│   ├─ Last Usable IP:\t"+pterm.LightBlue("%s"), lastUsable)
+	panel1 += pterm.FgGray.Sprintf("\n│   ├─ Broadcast IP:\t"+pterm.LightBlue("%s"), broadcast)
+	//panel1 += pterm.FgGray.Sprintf("\n│   ├─ Binary IP:"+pterm.LightBlue("%s"), binaryIP)
+	//panel1 += pterm.FgGray.Sprintf("\n│   ├─ Binary Mask:"+pterm.LightBlue(" %s"), binaryMask)
+	panel1 += pterm.FgGray.Sprintf("\n│   └─ Number of Hosts:\t"+pterm.LightBlue("%d"), numberOfHosts)
 
 	// Panel2 is for the subnet split option
 	panel2 := ""
@@ -90,8 +95,7 @@ func main() {
 		firstSubnetDecimalMask := actions.CidrToDecimalMask(firstSubnetNet)
 
 		// Create panel 2
-		panel2 += pterm.FgLightGreen.Sprintf("Split into %d networks, %d hosts per network\n", numberOfNetworks, numberOfHostsPerNetwork)
-		panel2 += pterm.FgLightGreen.Sprintf("Decimal Mask: %s\n", firstSubnetDecimalMask)
+		panel2 += pterm.FgLightGreen.Sprintf("\nSplit into %d networks, %d hosts per network, %s network mask:\n", numberOfNetworks, numberOfHostsPerNetwork, firstSubnetDecimalMask)
 		panel2 += pterm.FgGray.Sprintf("\n├─ %s", *networkStr) // Root of the tree
 		for i, subnet := range splitSubnets {
 			if i < len(splitSubnets)-1 {
@@ -103,7 +107,8 @@ func main() {
 	}
 	// Render  panels using DefaultBox
 	panels := pterm.Panels{
-		{{Data: pterm.DefaultBox.WithTitle("Current Network").Sprintf(panel1)}, {Data: pterm.DefaultBox.WithTitle("Requested Split").Sprintf(panel2)}},
+		{{Data: pterm.Sprintf(panel1)}},
+		{{Data: pterm.Sprintf(panel2)}},
 	}
 	// Print panels.
 	pterm.DefaultPanel.WithPanels(panels).Render()
