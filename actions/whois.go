@@ -3,6 +3,7 @@ package actions
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pterm/pterm"
 	"io"
 	"net"
 	"net/http"
@@ -52,15 +53,15 @@ func Whois(ip net.IP) {
 		for _, irrRecord := range irrRecordList {
 			switch irrRecord.Key {
 			case "route":
-				fmt.Println("Route:", irrRecord.Value)
+				pterm.Println(pterm.FgGray.Sprint("Route: \t\t") + pterm.FgLightBlue.Sprint(irrRecord.Value))
 			case "origin":
-				fmt.Println("Origin AS:", irrRecord.Value)
+				pterm.Println(pterm.FgGray.Sprint("Origin AS: \t") + pterm.FgLightBlue.Sprint(irrRecord.Value))
 			case "descr":
-				fmt.Println("Descr:", irrRecord.Value)
+				pterm.Println(pterm.FgGray.Sprint("Description: \t") + pterm.FgLightBlue.Sprint(irrRecord.Value))
 			}
 		}
 	}
 	// Access the Resource and QueryTime fields
-	fmt.Println("Resource:", whoisResp.Data.Resource)
-	fmt.Println("Query Time:", whoisResp.Data.QueryTime)
+	pterm.FgLightMagenta.Println("Resource:", whoisResp.Data.Resource)
+	pterm.FgLightMagenta.Println("Query Time:", whoisResp.Data.QueryTime)
 }
