@@ -14,7 +14,10 @@ type Record struct {
 }
 
 type Data struct {
-	Records [][]Record `json:"records"`
+	Records    [][]Record `json:"records"`
+	IrrRecords [][]Record `json:"irr_records"`
+	Resource   string     `json:"resource"`
+	QueryTime  string     `json:"query_time"`
 }
 
 type WhoisResponse struct {
@@ -45,19 +48,19 @@ func Whois(ip net.IP) {
 	}
 
 	// Access the extracted data
-	// Iterate through the records to find the "NetName" field
-	for _, recordList := range whoisResp.Data.Records {
-		for _, record := range recordList {
-			if record.Key == "NetName" {
-				fmt.Println("NetName:", record.Value)
-				return
-			}
-			if record.Key == "NetRange" {
-				fmt.Println("NetRange:", record.Value)
+	for _, irrRecordList := range whoisResp.Data.IrrRecords {
+		for _, irrRecord := range irrRecordList {
+			switch irrRecord.Key {
+			case "route":
+				fmt.Println("Route:", irrRecord.Value)
+			case "origin":
+				fmt.Println("Origin AS:", irrRecord.Value)
+			case "descr":
+				fmt.Println("Descr:", irrRecord.Value)
 			}
 		}
 	}
-
-	fmt.Println("NetName not found in records")
-	fmt.Println("Response Body:", string(body))
+	// Access the Resource and QueryTime fields
+	fmt.Println("Resource:", whoisResp.Data.Resource)
+	fmt.Println("Query Time:", whoisResp.Data.QueryTime)
 }
