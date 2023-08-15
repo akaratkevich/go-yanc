@@ -50,7 +50,7 @@ func main() {
 			pterm.Info.Println("The provided subnet is Public address space.\n")
 		}
 
-		// ... (Rest of the code related to -n flag)
+		// code related to -n flag
 
 		decimalMask := actions.CidrToDecimalMask(ipNet)
 		numberOfHosts := actions.CalculateHosts(ipNet)
