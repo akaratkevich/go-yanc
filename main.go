@@ -20,7 +20,7 @@ func main() {
 	// Define a flag for the network string
 	networkStr := flag.String("n", "", "IPv4 network in CIDR format (e.g., 192.168.1.0/24)")
 	split := flag.String("split", "", "Split network into subnets of this size (e.g., /25)")
-	//whois := flag.String("w", "", "RIPE whois lookup")
+	whois := flag.String("w", "", "RIPE whois lookup")
 
 	flag.Parse() // Parse the command-line flags
 
@@ -112,4 +112,11 @@ func main() {
 	// Print panels.
 	pterm.DefaultPanel.WithPanels(panels).Render()
 	// End panels
+
+	// Check for the whois flag
+	if *whois != "" {
+		actions.Whois(ip)
+		return // Exit the program after the Whois lookup
+	}
+
 }
